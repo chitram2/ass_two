@@ -1,0 +1,35 @@
+In this Project, I am forking multiple threads in main() and it performs prime function.
+
+The thread is defined as struct and its 5 arguments are: 
+-stack pointer
+-stack base pointer
+-Initial argument
+-Initial function and
+-Thread state.
+
+In the Program flow, scheduler_begin() allocates the current thread and sets the state as running.    
+
+Thread fork(), allocate memory to stack pointer and stack base of new thread and enqueue into ready list. Set the new thread state as running and swap 
+into the current thread. Then the thread_start assembly code is calling thread_wrap().
+
+Thread wrap() is calling prime function and set the current thread state as done. Then it is calling yield().
+
+In yield(), if the current thread state is done, then the current thread is dequeued and swap the current thread and next thread. The thread switch 
+assembly code is switching the current thread to next thread. If next thread state is done, I am freeing the next thread and next thread stack base pointer.
+
+scheduler_end() is  calling the while loop to yield the thread. In main(), after scheduler_end(), the current thread and current thread stack base pointer is freed.
+
+1.Memory management is not included in the instructions above. Given this setup, what is an intuitive way to solve the problem of memory reclamation for
+ thread stacks and thread control blocks? What could we do to avoid excessive allocations and deallocations?
+   	 I allocated the stack pointer and stack base pointer in the fork.  The intuitive way to solve the problem of memory reclamation for threads stack
+ and thread control block is freeing memory when the thread ends and not waiting till scheduler end. I am using small size stack to avoid the excessive 
+ allocations and deallocations. 
+
+2.	When executing scheduler code (e.g. yield, thread_fork, etc), are we running in a thread? Which thread? At what precise point can we say we have 
+stopped running one thread's code and started running another? This is a deliberately open-ended question; just give your thoughts.
+   	Yes, Scheduler code is running in a thread. It depends on thread, which thread is running. The precise point at which I stopped running one thread’s
+ code and started running another is when I swap the stack pointers of the two threads in the assembly code.  
+
+3.	What other functionality would you find useful in a threading API? Can you think of a multi-threaded application that you cannot write given this
+ simple interface?
+In a threading API, I would like to have functions that process IO calls.Multi-threaded applications such as Graphical User Interface(GUI) and Web browser.
